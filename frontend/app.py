@@ -477,6 +477,8 @@ if st.session_state.upload_result:
             try:
 
                 response_data = response.json()
+                st.subheader("CHAT API RESPONSE")
+                st.json(response_data)
 
             except Exception:
 
