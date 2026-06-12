@@ -6,7 +6,7 @@ import uuid
 
 from utils.api_client import upload_file
 
-BACKEND_URL = "http://localhost:8000/api"
+BACKEND_URL = "https://excelgpt-2zrp.onrender.com"
 
 def render_chart(chart_info, result_table):
 
@@ -216,7 +216,13 @@ st.set_page_config(
 
 st.title("ExcelGPT")
 st.caption(
-    "AI-Powered Business Intelligence Assistant"
+    """
+    AI-Powered Business Intelligence Assistant
+    Upload Excel files,
+    analyze business data,
+    generate charts,
+    and ask questions in natural language.
+    """
 )
 
 # =====================================
