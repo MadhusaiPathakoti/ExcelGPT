@@ -1,5 +1,6 @@
 import requests
 
+
 BASE_URL = "https://excelgpt-2zrp.onrender.com"
 
 
@@ -13,18 +14,25 @@ def upload_file(file):
         )
     }
 
-    response = requests.post(
-        f"{BASE_URL}/upload",
-        files=files,
-        timeout=120
-    )
+    try:
 
-    print("STATUS:", response.status_code)
-    print("RESPONSE:", response.text)
-
-    if response.status_code != 200:
-        raise Exception(
-            f"Backend Error {response.status_code}: {response.text}"
+        response = requests.post(
+            f"{BASE_URL}/upload",
+            files=files,
+            timeout=120
         )
 
-    return response.json()
+        print("STATUS:", response.status_code)
+        print("BODY:", response.text)
+
+        return {
+            "status_code": response.status_code,
+            "body": response.text
+        }
+
+    except Exception as e:
+
+        return {
+            "status_code": -1,
+            "body": str(e)
+        }
