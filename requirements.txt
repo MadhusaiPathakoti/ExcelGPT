@@ -10,3 +10,4 @@ plotly
 requests
 dotenv 
 duckdb
+python-dotenv
