@@ -6,7 +6,7 @@ import uuid
 
 from utils.api_client import upload_file
 
-BACKEND_URL = "https://excelgpt-2zrp.onrender.com"
+BACKEND_URL = "https://excelgpt-2zrp.onrender.com/api"
 
 def render_chart(chart_info, result_table):
 
