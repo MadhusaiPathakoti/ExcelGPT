@@ -260,6 +260,8 @@ if (
     with st.spinner("Analyzing dataset..."):
 
         result = upload_file(uploaded_file)
+        st.subheader("RAW API RESPONSE")
+        st.json(result)
 
         st.session_state.upload_result = result
 
