@@ -1,9 +1,213 @@
 import streamlit as st
 import requests
+import plotly.express as px
+import pandas as pd
+import uuid
 
 from utils.api_client import upload_file
 
 BACKEND_URL = "http://localhost:8000/api"
+
+def render_chart(chart_info, result_table):
+
+    if not chart_info:
+        return
+
+    if not result_table:
+        return
+
+    df = pd.DataFrame(result_table)
+
+    chart_type = chart_info.get(
+        "chart_type",
+        "bar"
+    )
+
+    x = chart_info.get("x")
+    y = chart_info.get("y")
+
+    if x not in df.columns:
+        st.warning(
+            f"Column '{x}' not found."
+        )
+        return
+
+    if y not in df.columns:
+        st.warning(
+            f"Column '{y}' not found."
+        )
+        return
+
+    # KPI Cards
+
+    try:
+
+        if pd.api.types.is_numeric_dtype(
+            df[y]
+        ):
+
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                st.metric(
+                    "Total",
+                    round(
+                        df[y].sum(),
+                        2
+                    )
+                )
+
+            with col2:
+                st.metric(
+                    "Average",
+                    round(
+                        df[y].mean(),
+                        2
+                    )
+                )
+
+            with col3:
+                st.metric(
+                    "Maximum",
+                    round(
+                        df[y].max(),
+                        2
+                    )
+                )
+
+    except Exception:
+        pass
+
+    try:
+
+        if chart_type != "line":
+
+            if y in df.columns:
+                df = df.sort_values(
+                    by=y,
+                    ascending=False
+                )
+
+        if chart_type == "bar":
+
+            if len(df) >= 6:
+
+                fig = px.bar(
+                    df,
+                    x=y,
+                    y=x,
+                    orientation="h",
+                    text_auto=".2s"
+                )
+
+            else:
+
+                fig = px.bar(
+                    df,
+                    x=x,
+                    y=y,
+                    text_auto=".2s"
+                )
+
+            fig.update_traces(
+                textposition="outside"
+            )
+
+        elif chart_type == "line":
+
+            fig = px.line(
+                df,
+                x=x,
+                y=y,
+                markers=True
+            )
+
+            fig.update_traces(
+                line_width=4,
+                marker_size=10
+            )
+
+        elif chart_type == "pie":
+
+            fig = px.pie(
+                df,
+                names=x,
+                values=y,
+                hole=0.5
+            )
+
+            fig.update_traces(
+                textposition="inside",
+                textinfo="percent+label"
+            )
+
+        elif chart_type == "scatter":
+
+            fig = px.scatter(
+                df,
+                x=x,
+                y=y,
+                size=y
+            )
+
+        else:
+
+            fig = px.bar(
+                df,
+                x=x,
+                y=y,
+                text_auto=".2s"
+            )
+
+        fig.update_layout(
+            template="plotly_white",
+            height=600,
+            font=dict(
+                size=14
+            ),
+            title=dict(
+                x=0.5
+            ),
+            margin=dict(
+                l=20,
+                r=20,
+                t=50,
+                b=20
+            ),
+            hovermode="closest",
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
+            )
+        )
+
+        st.plotly_chart(
+            fig,
+            use_container_width=True
+        )
+
+        # Download Button
+
+        csv = df.to_csv(
+            index=False
+        )
+
+        st.download_button(
+                label="📥 Download Results",
+                data=csv,
+                file_name="results.csv",
+                mime="text/csv",
+                key=f"download_{uuid.uuid4()}"
+            )
+
+    except Exception as e:
+
+        st.error(
+            f"Chart Error: {str(e)}"
+        )
 
 st.set_page_config(
     page_title="ExcelGPT",
@@ -207,23 +411,27 @@ if st.session_state.upload_result:
                 message["content"]
             )
 
-            if (
-                message["role"]
-                == "assistant"
-            ):
+            if message["role"] == "assistant":
 
-                if "sql" in message:
+                if message.get("sql"):
 
                     st.code(
                         message["sql"],
                         language="sql"
                     )
 
-                if "result" in message:
+                if message.get("result"):
 
                     st.dataframe(
                         message["result"],
                         use_container_width=True
+                    )
+
+                if message.get("chart"):
+
+                    render_chart(
+                        message["chart"],
+                        message["result"]
                     )
 
     question = st.chat_input(
@@ -286,7 +494,9 @@ if st.session_state.upload_result:
             "result",
             []
         )
-
+        chart_info = response_data.get(
+            "chart"
+        )
         with st.chat_message(
             "assistant"
         ):
@@ -315,11 +525,23 @@ if st.session_state.upload_result:
                     use_container_width=True
                 )
 
+            if chart_info:
+
+                st.subheader(
+                    "Visualization"
+                )
+
+                render_chart(
+                    chart_info,
+                    result_table
+                )
+
         st.session_state.chat_history.append(
             {
                 "role": "assistant",
                 "content": answer,
                 "sql": sql,
-                "result": result_table
+                "result": result_table,
+                "chart": chart_info
             }
         )

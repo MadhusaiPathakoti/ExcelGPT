@@ -6,6 +6,7 @@ pandas
 openpyxl
 
 streamlit
+plotly
 requests
 dotenv 
 duckdb
