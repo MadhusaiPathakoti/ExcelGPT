@@ -260,8 +260,6 @@ if (
     with st.spinner("Analyzing dataset..."):
 
         result = upload_file(uploaded_file)
-        st.write(result)
-        st.stop()
 
         st.session_state.upload_result = result
 
