@@ -1,32 +1,44 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from services.session_store import SESSIONS
+from graph.workflow import graph
 
-from agents.sql_agent import SQLAgent
-from agents.explain_agent import ExplainAgent
+from services.session_store import (
+    SESSIONS
+)
 
-from services.sql_executor import SQLExecutor
-from services.sql_validator import SQLValidator
+from services.sql_executor import (
+    SQLExecutor
+)
 
 router = APIRouter()
 
 
 class ChatRequest(BaseModel):
+
     session_id: str
+
     question: str
 
 
-def detect_chart(question, result_df):
+def detect_chart(
+    question,
+    result
+):
 
-    question = question.lower()
+    question = (
+        question.lower()
+    )
 
-    if result_df.empty:
+    if not result:
         return None
 
-    columns = result_df.columns.tolist()
+    columns = (
+        list(
+            result[0].keys()
+        )
+    )
 
-    # Need at least 2 columns for charting
     if len(columns) < 2:
         return None
 
@@ -85,117 +97,197 @@ def detect_chart(question, result_df):
 
 
 @router.post("/chat")
-def chat(request: ChatRequest):
+def chat(
+    request: ChatRequest
+):
 
-    if request.session_id not in SESSIONS:
+    if (
+        request.session_id
+        not in SESSIONS
+    ):
 
         return {
-            "answer": "Invalid session.",
-            "sql": "",
-            "result": [],
-            "chart": None
+
+            "answer":
+                "Invalid session.",
+
+            "sql":
+                "",
+
+            "result":
+                [],
+
+            "chart":
+                None
         }
 
-    table_name = SESSIONS[
-        request.session_id
-    ]
+    table_name = (
+        SESSIONS[
+            request.session_id
+        ]
+    )
 
     db = SQLExecutor()
 
-    schema_df = db.execute(
-        f"DESCRIBE {table_name}"
-    )
-
-    schema = schema_df.to_string()
-
     try:
 
-        sql = SQLAgent.generate_sql(
-            request.question,
-            schema,
-            table_name
-        )
-
-    except Exception as e:
-
-        return {
-            "answer": f"SQL Generation Error: {str(e)}",
-            "sql": "",
-            "result": [],
-            "chart": None
-        }
-
-    if not SQLValidator.validate(sql):
-
-        return {
-            "answer": "Invalid SQL generated.",
-            "sql": sql,
-            "result": [],
-            "chart": None
-        }
-
-    try:
-
-        result_df = SQLExecutor.execute(
-            sql
-        )
-
-    except Exception as e:
-
-        return {
-            "answer": f"SQL Error: {str(e)}",
-            "sql": sql,
-            "result": [],
-            "chart": None
-        }
-
-    try:
-
-        explanation = (
-            ExplainAgent.explain(
-                request.question,
-                result_df
+        schema_df = (
+            db.execute(
+                f"""
+                DESCRIBE
+                {table_name}
+                """
             )
         )
 
-    except Exception:
-
-        explanation = (
-            "Analysis completed successfully."
+        schema = (
+            schema_df
+            .to_string()
         )
 
-    chart = detect_chart(
-        request.question,
-        result_df
+    except Exception as e:
+
+        return {
+
+            "answer":
+                f"Schema Error: {str(e)}",
+
+            "sql":
+                "",
+
+            "result":
+                [],
+
+            "chart":
+                None
+        }
+
+    try:
+
+        state = {
+
+            "question":
+                request.question,
+
+            "schema":
+                schema,
+
+            "table_name":
+                table_name,
+
+            "intent":
+                "",
+
+            "sql":
+                "",
+
+            "result":
+                [],
+
+            "answer":
+                "",
+
+            "chart":
+                None
+        }
+
+        result = (
+            graph.invoke(
+                state
+            )
+        )
+
+    except Exception as e:
+
+        return {
+
+            "answer":
+                f"Workflow Error: {str(e)}",
+
+            "sql":
+                "",
+
+            "result":
+                [],
+
+            "chart":
+                None
+        }
+
+    chart = (
+        result.get(
+            "chart"
+        )
     )
 
-    print("\n========== DEBUG ==========")
-    print("QUESTION:")
-    print(request.question)
+    if not chart:
 
-    print("\nSQL:")
-    print(sql)
+        chart = detect_chart(
+            request.question,
+            result.get(
+                "result",
+                []
+            )
+        )
 
-    print("\nRESULT COLUMNS:")
-    print(result_df.columns.tolist())
+    print(
+        "\n========== LANGGRAPH =========="
+    )
 
-    print("\nCHART:")
-    print(chart)
+    print(
+        "QUESTION:",
+        request.question
+    )
 
-    print("===========================\n")
+    print(
+        "INTENT:",
+        result.get(
+            "intent"
+        )
+    )
+
+    print(
+        "SQL:",
+        result.get(
+            "sql"
+        )
+    )
+
+    print(
+        "CHART:",
+        chart
+    )
+
+    print(
+        "===============================\n"
+    )
 
     return {
 
-        "sql": sql,
-
-        "answer": explanation,
-
-        "result":
-            result_df
-            .fillna("")
-            .to_dict(
-                orient="records"
+        "answer":
+            result.get(
+                "answer",
+                ""
             ),
 
-        "chart": chart
+        "sql":
+            result.get(
+                "sql",
+                ""
+            ),
+
+        "result":
+            result.get(
+                "result",
+                []
+            ),
+
+        "chart":
+            chart,
+
+        "intent":
+            result.get(
+                "intent",
+                ""
+            )
     }

@@ -11,3 +11,6 @@ requests
 dotenv 
 duckdb
 python-dotenv
+
+langgraph
+langchain-core

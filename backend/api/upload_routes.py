@@ -4,6 +4,9 @@ import uuid
 from fastapi import APIRouter
 from fastapi import UploadFile
 from fastapi import File
+from services.insight_generator import (
+    InsightGenerator
+)
 
 from services.excel_loader import ExcelLoader
 from database.duckdb_manager import (
@@ -82,6 +85,10 @@ async def upload_excel(
     DatasetProfiler
     .suggested_questions(df)
     )
+    insights = (
+    InsightGenerator
+    .generate(df)
+)
     
 
     return {
@@ -100,6 +107,9 @@ async def upload_excel(
 
     "suggested_questions":
         questions,
+
+    "insights":
+        insights,
 
     "preview":
         df.head(10)

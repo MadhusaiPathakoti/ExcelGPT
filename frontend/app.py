@@ -281,6 +281,10 @@ if st.session_state.upload_result:
         "profile",
         {}
     )
+    insights = result.get(
+    "insights",
+    {}
+)
 
     st.success(
         "Dataset uploaded successfully"
@@ -396,6 +400,81 @@ if st.session_state.upload_result:
                 result["preview"],
                 use_container_width=True
             )
+    
+    st.header(
+                "📊 AI Generated Insights"
+            )
+
+    c1, c2, c3 = st.columns(3)
+
+    with c1:
+
+        st.metric(
+            "Top Product",
+            insights.get(
+                "top_product",
+                "N/A"
+            )
+        )
+
+    with c2:
+
+        st.metric(
+            "Best Region",
+            insights.get(
+                "best_region",
+                "N/A"
+            )
+        )
+
+    with c3:
+
+        st.metric(
+            "Most Ordered Product",
+            insights.get(
+                "most_ordered_product",
+                "N/A"
+            )
+        )
+
+    c4, c5, c6 = st.columns(3)
+
+    with c4:
+
+        st.metric(
+            "Revenue",
+            insights.get(
+                "total_revenue",
+                0
+            )
+        )
+
+    with c5:
+
+        st.metric(
+            "Missing Cells",
+            insights.get(
+                "missing_cells",
+                0
+            )
+        )
+
+    with c6:
+
+        st.metric(
+            "Outliers",
+            insights.get(
+                "outliers",
+                0
+            )
+        )
+
+    for item in insights.get(
+        "summary",
+        []
+    ):
+
+        st.success(item)
 
     st.divider()
 
