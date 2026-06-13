@@ -26,17 +26,13 @@ def detect_chart(
     result
 ):
 
-    question = (
-        question.lower()
-    )
+    question = question.lower()
 
     if not result:
         return None
 
-    columns = (
-        list(
-            result[0].keys()
-        )
+    columns = list(
+        result[0].keys()
     )
 
     if len(columns) < 2:
@@ -101,10 +97,7 @@ def chat(
     request: ChatRequest
 ):
 
-    if (
-        request.session_id
-        not in SESSIONS
-    ):
+    if request.session_id not in SESSIONS:
 
         return {
 
@@ -121,29 +114,77 @@ def chat(
                 None
         }
 
-    table_name = (
+    session_data = (
         SESSIONS[
             request.session_id
         ]
     )
 
+    tables = (
+        session_data.get(
+            "tables",
+            []
+        )
+    )
+
+    relationships = (
+        session_data.get(
+            "relationships",
+            []
+        )
+    )
+
+    if not tables:
+
+        return {
+
+            "answer":
+                "No tables found in session.",
+
+            "sql":
+                "",
+
+            "result":
+                [],
+
+            "chart":
+                None
+        }
+
     db = SQLExecutor()
+
+    schema_text = ""
 
     try:
 
-        schema_df = (
-            db.execute(
-                f"""
-                DESCRIBE
-                {table_name}
-                """
-            )
-        )
+        for table in tables:
 
-        schema = (
-            schema_df
-            .to_string()
-        )
+            table_name = (
+                table[
+                    "table_name"
+                ]
+            )
+
+            schema_df = (
+                db.execute(
+                    f"""
+                    DESCRIBE
+                    {table_name}
+                    """
+                )
+            )
+
+            schema_text += f"""
+
+TABLE:
+{table_name}
+
+SCHEMA:
+
+{schema_df.to_string()}
+
+==================================================
+"""
 
     except Exception as e:
 
@@ -170,10 +211,13 @@ def chat(
                 request.question,
 
             "schema":
-                schema,
+                schema_text,
 
-            "table_name":
-                table_name,
+            "tables":
+                tables,
+
+            "relationships":
+                relationships,
 
             "intent":
                 "",
@@ -231,35 +275,71 @@ def chat(
         )
 
     print(
-        "\n========== LANGGRAPH =========="
+        "\n========== MULTI TABLE QUERY =========="
     )
 
     print(
-        "QUESTION:",
+        "QUESTION:"
+    )
+
+    print(
         request.question
     )
 
     print(
-        "INTENT:",
+        "\nTABLES:"
+    )
+
+    for table in tables:
+
+        print(
+            table[
+                "table_name"
+            ]
+        )
+
+    print(
+        "\nRELATIONSHIPS:"
+    )
+
+    for rel in relationships:
+
+        print(
+            f"{rel['left_table']}.{rel['left_column']} "
+            f"= "
+            f"{rel['right_table']}.{rel['right_column']}"
+        )
+
+    print(
+        "\nINTENT:"
+    )
+
+    print(
         result.get(
             "intent"
         )
     )
 
     print(
-        "SQL:",
+        "\nSQL:"
+    )
+
+    print(
         result.get(
             "sql"
         )
     )
 
     print(
-        "CHART:",
+        "\nCHART:"
+    )
+
+    print(
         chart
     )
 
     print(
-        "===============================\n"
+        "\n=======================================\n"
     )
 
     return {
@@ -289,5 +369,11 @@ def chat(
             result.get(
                 "intent",
                 ""
-            )
+            ),
+
+        "tables":
+            tables,
+
+        "relationships":
+            relationships
     }

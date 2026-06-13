@@ -10,13 +10,10 @@ from agents.explain_agent import (
     ExplainAgent
 )
 
-from agents.insight_agent import (
-    InsightAgent
-)
-
 from services.sql_executor import (
     SQLExecutor
 )
+
 
 def detect_intent(state):
 
@@ -28,22 +25,31 @@ def detect_intent(state):
 
     return state
 
+
 def run_sql(state):
 
     sql = SQLAgent.generate_sql(
-        state["question"],
-        state["schema"],
-        state["table_name"]
+
+    state["question"],
+
+    state["schema"],
+
+    state["tables"],
+
+    state["relationships"]
     )
 
     result = (
-        SQLExecutor.execute(sql)
+        SQLExecutor.execute(
+            sql
+        )
     )
 
     state["sql"] = sql
 
     state["result"] = (
         result
+        .fillna("")
         .to_dict(
             orient="records"
         )
@@ -51,21 +57,47 @@ def run_sql(state):
 
     return state
 
+
 def run_insight(state):
 
-    state["answer"] = (
-        InsightAgent.execute(
-            state["table_name"]
-        )
-    )
+    tables = state[
+        "tables"
+    ]
+
+    state["answer"] = {
+
+        "tables_available":
+
+            [
+                table[
+                    "table_name"
+                ]
+                for table in tables
+            ],
+
+        "message":
+
+            f"""
+Uploaded
+{len(tables)}
+table(s).
+
+You can now ask
+questions across
+multiple datasets.
+"""
+    }
 
     return state
+
 
 def explain(state):
 
     state["answer"] = (
         ExplainAgent.explain(
+
             state["question"],
+
             state["result"]
         )
     )

@@ -8,11 +8,16 @@ from graph.state import (
 )
 
 from graph.nodes import (
+
     detect_intent,
+
     run_sql,
+
     run_insight,
+
     explain
 )
+
 
 builder = StateGraph(
     AgentState
@@ -38,21 +43,34 @@ builder.add_node(
     explain
 )
 
+
 def router(state):
 
-    return state["intent"]
+    return state[
+        "intent"
+    ]
+
 
 builder.set_entry_point(
     "intent"
 )
 
 builder.add_conditional_edges(
+
     "intent",
+
     router,
+
     {
-        "sql": "sql",
-        "chart": "sql",
-        "insight": "insight"
+
+        "sql":
+            "sql",
+
+        "chart":
+            "sql",
+
+        "insight":
+            "insight"
     }
 )
 
@@ -71,4 +89,6 @@ builder.add_edge(
     END
 )
 
-graph = builder.compile()
+graph = (
+    builder.compile()
+)

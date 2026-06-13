@@ -245,21 +245,22 @@ if "session_id" not in st.session_state:
 # File Upload
 # =====================================
 
-uploaded_file = st.file_uploader(
-    "Upload Excel File",
-    type=["xlsx", "xls"]
+uploaded_files = st.file_uploader(
+    "Upload Excel Files",
+    type=["xlsx", "xls"],
+    accept_multiple_files=True
 )
-
 # Upload only once
 
 if (
-    uploaded_file is not None
+    uploaded_files
+    and len(uploaded_files) > 0
     and not st.session_state.dataset_uploaded
 ):
 
     with st.spinner("Analyzing dataset..."):
 
-        result = upload_file(uploaded_file)
+        result = upload_file(uploaded_files)
 
         st.session_state.upload_result = result
 

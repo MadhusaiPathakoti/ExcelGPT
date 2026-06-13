@@ -55,3 +55,38 @@ class DuckDBManager:
             )
             .fetchdf()
         )
+
+    def get_columns(
+        self,
+        table_name
+    ):
+
+        schema = (
+            self.get_schema(
+                table_name
+            )
+        )
+
+        return (
+            schema[
+                "column_name"
+            ]
+            .tolist()
+        )
+
+    def get_all_tables(self):
+
+        tables = (
+            self.conn
+            .execute(
+                """
+                SHOW TABLES
+                """
+            )
+            .fetchall()
+        )
+
+        return [
+            t[0]
+            for t in tables
+        ]

@@ -1,4 +1,6 @@
 from typing import TypedDict
+from typing import List
+from typing import Dict
 
 
 class AgentState(
@@ -9,7 +11,7 @@ class AgentState(
 
     schema: str
 
-    table_name: str
+    tables: List[Dict]
 
     intent: str
 
@@ -20,3 +22,5 @@ class AgentState(
     answer: str
 
     chart: dict
+    
+    relationships: list
