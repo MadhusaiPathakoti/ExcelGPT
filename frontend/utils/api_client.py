@@ -39,12 +39,9 @@ def upload_file(uploaded_files):
 
     if response.status_code != 200:
 
-        print("\n========== ERROR ==========")
-        print(response.text)
-        print("===========================\n")
-
-        raise Exception(
-            f"{response.status_code}\n\n{response.text}"
-        )
-
+        return {
+            "error": True,
+            "status_code": response.status_code,
+            "body": response.text
+        }
     return response.json()

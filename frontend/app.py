@@ -369,6 +369,7 @@ if (
     with st.spinner("Analyzing dataset..."):
 
         result = upload_file(uploaded_files)
+        st.json(result)
 
         st.session_state.upload_result = result
 
