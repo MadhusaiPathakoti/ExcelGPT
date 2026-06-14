@@ -25,7 +25,9 @@ def render_chart(chart_info, result_table):
 
     x = chart_info.get("x")
     y = chart_info.get("y")
-
+    color = chart_info.get(
+        "color"
+    )
     if x not in df.columns:
         st.warning(
             f"Column '{x}' not found."
@@ -80,9 +82,16 @@ def render_chart(chart_info, result_table):
 
     try:
 
-        if chart_type != "line":
+        if (
+            chart_type
+            not in [
+                "line",
+                "grouped_bar"
+            ]
+        ):
 
             if y in df.columns:
+
                 df = df.sort_values(
                     by=y,
                     ascending=False
@@ -129,8 +138,15 @@ def render_chart(chart_info, result_table):
 
         elif chart_type == "pie":
 
+            pie_df = (
+                df.nlargest(
+                    10,
+                    y
+                )
+            )
+
             fig = px.pie(
-                df,
+                pie_df,
                 names=x,
                 values=y,
                 hole=0.5
@@ -140,7 +156,63 @@ def render_chart(chart_info, result_table):
                 textposition="inside",
                 textinfo="percent+label"
             )
+        elif chart_type == "grouped_bar":
 
+            color_column = chart_info.get(
+                "color"
+            )
+
+            fig = px.bar(
+                df,
+                x=x,
+                y=y,
+                color=color_column,
+                barmode="group",
+                text_auto=".2s"
+            )
+
+            fig.update_traces(
+                textposition="outside"
+            )
+        elif chart_type == "stacked_bar":
+
+            fig = px.bar(
+                df,
+                x=x,
+                y=y,
+                color=chart_info.get(
+                    "color"
+                ),
+                barmode="stack",
+                text_auto=".2s"
+            )
+        elif chart_type == "treemap":
+
+            fig = px.treemap(
+                df,
+                path=[
+                    x,
+                    chart_info.get(
+                        "color"
+                    )
+                ],
+                values=y
+            )
+        elif chart_type == "heatmap":
+
+            pivot_df = df.pivot_table(
+                index=x,
+                columns=chart_info.get(
+                    "color"
+                ),
+                values=y,
+                aggfunc="sum"
+            )
+
+            fig = px.imshow(
+                pivot_df,
+                text_auto=True
+            )
         elif chart_type == "scatter":
 
             fig = px.scatter(
@@ -152,12 +224,44 @@ def render_chart(chart_info, result_table):
 
         else:
 
-            fig = px.bar(
-                df,
-                x=x,
-                y=y,
-                text_auto=".2s"
+            numeric_cols = list(
+                df.select_dtypes(
+                    include="number"
+                ).columns
             )
+
+            categorical_cols = [
+
+                col
+
+                for col in df.columns
+
+                if col not in numeric_cols
+            ]
+
+            if (
+                len(categorical_cols) >= 2
+                and
+                len(numeric_cols) >= 1
+            ):
+
+                fig = px.bar(
+                    df,
+                    x=categorical_cols[0],
+                    y=numeric_cols[0],
+                    color=categorical_cols[1],
+                    barmode="group",
+                    text_auto=".2s"
+                )
+
+            else:
+
+                fig = px.bar(
+                    df,
+                    x=x,
+                    y=y,
+                    text_auto=".2s"
+                )
 
         fig.update_layout(
             template="plotly_white",
@@ -184,9 +288,12 @@ def render_chart(chart_info, result_table):
             )
         )
 
+        import uuid
+
         st.plotly_chart(
             fig,
-            use_container_width=True
+            use_container_width=True,
+            key=f"chart_{uuid.uuid4()}"
         )
 
         # Download Button
@@ -237,7 +344,8 @@ if "upload_result" not in st.session_state:
 
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
-
+if "editing_index" not in st.session_state:
+    st.session_state.editing_index = None
 if "session_id" not in st.session_state:
     st.session_state.session_id = None
 
@@ -486,8 +594,10 @@ if st.session_state.upload_result:
     st.header(
         "Chat With Your Data"
     )
-
-    for message in st.session_state.chat_history:
+    
+    for idx, message in enumerate(
+    st.session_state.chat_history
+    ):
 
         with st.chat_message(
             message["role"]
@@ -496,6 +606,140 @@ if st.session_state.upload_result:
             st.markdown(
                 message["content"]
             )
+
+            # ==========================
+            # USER MESSAGE
+            # ==========================
+
+            if (
+                message["role"] == "user"
+            ):
+
+                col1, col2 = st.columns(
+                    [1, 8]
+                )
+
+                with col1:
+
+                    edit_clicked = st.button(
+                        "✏️",
+                        key=f"edit_{idx}"
+                    )
+
+                    if edit_clicked:
+
+                        st.session_state[
+                            "editing_index"
+                        ] = idx
+
+                        st.session_state[
+                            "editing_index"
+                        ] = idx
+
+                    if (
+                        st.session_state[
+                            "editing_index"
+                        ]
+                        == idx
+                    ):
+
+                        edited_question = (
+                            st.text_area(
+                                "Edit Question",
+                                value=message[
+                                    "content"
+                                ],
+                                key=f"edit_box_{idx}"
+                            )
+                        )
+
+                    if st.button(
+                        "🔄 Regenerate",
+                        key=f"regen_{idx}"
+                    ):
+
+                        with st.spinner(
+                            "Regenerating..."
+                        ):
+
+                            response = requests.post(
+                                f"{BACKEND_URL}/chat",
+                                json={
+                                    "session_id":
+                                        st.session_state.session_id,
+                                    "question":
+                                        edited_question
+                                }
+                            )
+
+                            response_data = (
+                                response.json()
+                            )
+
+                        # update user question
+
+                        st.session_state.chat_history[
+                            idx
+                        ]["content"] = (
+                            edited_question
+                        )
+
+                        # update assistant answer
+
+                        new_assistant_message = {
+
+                            "role":
+                                "assistant",
+
+                            "content":
+                                response_data.get(
+                                    "answer",
+                                    ""
+                                ),
+
+                            "sql":
+                                response_data.get(
+                                    "sql",
+                                    ""
+                                ),
+
+                            "result":
+                                response_data.get(
+                                    "result",
+                                    []
+                                ),
+
+                            "chart":
+                                response_data.get(
+                                    "chart"
+                                )
+                        }
+
+                        st.session_state.chat_history = (
+
+                            st.session_state.chat_history[
+                                :idx
+                            ]
+
+                            +
+
+                            [
+                                {
+                                    "role": "user",
+                                    "content": edited_question
+                                },
+                                new_assistant_message
+                            ]
+                        )
+                        st.session_state[
+                            "editing_index"
+                        ] = None
+
+                        st.rerun()
+
+            # ==========================
+            # ASSISTANT MESSAGE
+            # ==========================
 
             if message["role"] == "assistant":
 
@@ -519,7 +763,7 @@ if st.session_state.upload_result:
                         message["chart"],
                         message["result"]
                     )
-
+    
     question = st.chat_input(
         "Ask a question about your data..."
     )

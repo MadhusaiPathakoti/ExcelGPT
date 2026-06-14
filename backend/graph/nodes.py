@@ -10,6 +10,10 @@ from agents.explain_agent import (
     ExplainAgent
 )
 
+from agents.chart_agent import (
+    ChartAgent
+)
+
 from services.sql_executor import (
     SQLExecutor
 )
@@ -30,13 +34,13 @@ def run_sql(state):
 
     sql = SQLAgent.generate_sql(
 
-    state["question"],
+        state["question"],
 
-    state["schema"],
+        state["schema"],
 
-    state["tables"],
+        state["tables"],
 
-    state["relationships"]
+        state["relationships"]
     )
 
     result = (
@@ -54,6 +58,34 @@ def run_sql(state):
             orient="records"
         )
     )
+
+    return state
+
+
+def generate_chart(state):
+
+    chart = (
+    ChartAgent.recommend(
+
+        state["result"],
+
+        state["question"]
+    )
+)
+
+    state["chart"] = chart
+
+    print("\n===== CHART DEBUG =====")
+    print("QUESTION:")
+    print(state["question"])
+
+    print("\nRESULT:")
+    print(state["result"][:3])
+
+    print("\nCHART:")
+    print(chart)
+
+    print("=======================\n")
 
     return state
 

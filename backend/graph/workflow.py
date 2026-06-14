@@ -15,7 +15,8 @@ from graph.nodes import (
 
     run_insight,
 
-    explain
+    explain,
+    generate_chart
 )
 
 
@@ -26,6 +27,11 @@ builder = StateGraph(
 builder.add_node(
     "intent",
     detect_intent
+)
+
+builder.add_node(
+    "chart",
+    generate_chart
 )
 
 builder.add_node(
@@ -76,9 +82,13 @@ builder.add_conditional_edges(
 
 builder.add_edge(
     "sql",
-    "explain"
+    "chart"
 )
 
+builder.add_edge(
+    "chart",
+    "explain"
+)
 builder.add_edge(
     "insight",
     END

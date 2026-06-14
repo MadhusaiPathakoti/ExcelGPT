@@ -264,16 +264,6 @@ SCHEMA:
         )
     )
 
-    if not chart:
-
-        chart = detect_chart(
-            request.question,
-            result.get(
-                "result",
-                []
-            )
-        )
-
     print(
         "\n========== MULTI TABLE QUERY =========="
     )
