@@ -61,6 +61,7 @@ async def upload_excel(
     fact_df = None
 
     fact_score = -1
+    previews = {}
 
     for file in files:
 
@@ -107,6 +108,16 @@ async def upload_excel(
             df
         )
 
+        previews[
+                table_name
+            ] = (
+                df
+                .head(10)
+                .fillna("")
+                .to_dict(
+                    orient="records"
+                )
+            )
         uploaded_tables.append(
             {
                 "table_name":
@@ -206,8 +217,8 @@ async def upload_excel(
             "insights":
                 {},
 
-            "preview":
-                []
+            "previews":
+                {}
         }
 
     profile = (
@@ -286,11 +297,5 @@ async def upload_excel(
         "insights":
             insights,
 
-        "preview":
-            fact_df
-            .head(10)
-            .fillna("")
-            .to_dict(
-                orient="records"
-            )
+        "previews": previews
     }

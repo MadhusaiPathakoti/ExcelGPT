@@ -8,6 +8,19 @@ class IntentAgent:
         if any(
             word in q
             for word in [
+                "dashboard",
+                "executive dashboard",
+                "sales dashboard",
+                "generate dashboard",
+                "create dashboard"
+            ]
+        ):
+
+            return "dashboard"
+
+        if any(
+            word in q
+            for word in [
                 "chart",
                 "graph",
                 "plot",

@@ -23,4 +23,6 @@ class AgentState(
 
     chart: dict
     
+    dashboard: dict
+    
     relationships: list

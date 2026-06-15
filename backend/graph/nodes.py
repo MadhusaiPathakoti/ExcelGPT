@@ -18,6 +18,9 @@ from services.sql_executor import (
     SQLExecutor
 )
 
+from agents.dashboard_agent import (
+    DashboardAgent
+)
 
 def detect_intent(state):
 
@@ -131,6 +134,16 @@ def explain(state):
             state["question"],
 
             state["result"]
+        )
+    )
+
+    return state
+
+def generate_dashboard(state):
+
+    state["dashboard"] = (
+        DashboardAgent.generate_dashboard(
+            state["question"]
         )
     )
 

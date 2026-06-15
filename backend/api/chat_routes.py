@@ -1,6 +1,16 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
+from agents.dashboard_agent import (
+    DashboardAgent
+)
 
+from agents.sql_agent import (
+    SQLAgent
+)
+
+from agents.chart_agent import (
+    ChartAgent
+)
 from graph.workflow import graph
 
 from services.session_store import (
@@ -111,7 +121,10 @@ def chat(
                 [],
 
             "chart":
-                None
+                None,
+
+            "dashboard":
+                {}
         }
 
     session_data = (
@@ -240,7 +253,119 @@ SCHEMA:
                 state
             )
         )
+        # =====================================
+        # Dashboard Mode
+        # =====================================
 
+        if result.get(
+            "intent"
+        ) == "dashboard":
+
+            dashboard = (
+                result.get(
+                    "dashboard",
+                    {}
+                )
+            )
+
+            widgets = []
+
+            for widget in dashboard.get(
+                "widgets",
+                []
+            ):
+
+                try:
+
+                    sql = SQLAgent.generate_sql(
+
+                        widget[
+                            "question"
+                        ],
+
+                        schema_text,
+
+                        tables,
+
+                        relationships
+                    )
+
+                    df = (
+                        SQLExecutor.execute(
+                            sql
+                        )
+                    )
+
+                    records = (
+                        df.fillna("")
+                        .to_dict(
+                            orient="records"
+                        )
+                    )
+
+                    chart = (
+                        ChartAgent.recommend(
+                            records,
+                            widget[
+                                "question"
+                            ]
+                        )
+                    )
+
+                    widgets.append(
+
+                        {
+
+                            "title":
+                                widget[
+                                    "title"
+                                ],
+
+                            "question":
+                                widget[
+                                    "question"
+                                ],
+
+                            "sql":
+                                sql,
+
+                            "result":
+                                records,
+
+                            "chart":
+                                chart
+                        }
+                    )
+
+                except Exception as e:
+
+                    widgets.append(
+
+                        {
+
+                            "title":
+                                widget[
+                                    "title"
+                                ],
+
+                            "error":
+                                str(e)
+                        }
+                    )
+
+            return {
+
+                "intent":
+                    "dashboard",
+
+                "dashboard_type":
+                    dashboard.get(
+                        "dashboard_type"
+                    ),
+
+                "widgets":
+                    widgets
+            }
     except Exception as e:
 
         return {

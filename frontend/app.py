@@ -369,7 +369,6 @@ if (
     with st.spinner("Analyzing dataset..."):
 
         result = upload_file(uploaded_files)
-        st.json(result)
 
         st.session_state.upload_result = result
 
@@ -486,29 +485,171 @@ if st.session_state.upload_result:
 
     # ---------------------------------
 
-    if "suggested_questions" in result:
+    # =====================================
+    # Uploaded Datasets
+    # =====================================
 
-        st.subheader(
-            "Suggested Questions"
+    if "previews" in result:
+
+        st.header(
+            "📂 Uploaded Datasets"
         )
 
-        for question in result[
-            "suggested_questions"
-        ]:
+        previews = result.get(
+            "previews",
+            {}
+        )
 
-            st.info(question)
+        tables = result.get(
+            "tables",
+            []
+        )
 
-    # ---------------------------------
+        for table in tables:
 
-    if "preview" in result:
+            table_name = table[
+                "table_name"
+            ]
 
-        with st.expander(
-            "Dataset Preview"
-        ):
+            rows = table[
+                "rows"
+            ]
 
-            st.dataframe(
-                result["preview"],
-                use_container_width=True
+            cols = table[
+                "columns"
+            ]
+
+            with st.expander(
+                f"📄 {table_name} | {rows} rows | {cols} columns"
+            ):
+
+                preview_data = (
+                    previews.get(
+                        table_name,
+                        []
+                    )
+                )
+
+                if preview_data:
+
+                    st.dataframe(
+                        pd.DataFrame(
+                            preview_data
+                        ),
+                        use_container_width=True
+                    )
+
+                else:
+
+                    st.info(
+                        "No preview available"
+                    )
+
+    # =====================================
+    # Relationship Explorer
+    # =====================================
+
+    relationships = result.get(
+        "relationships",
+        []
+    )
+
+    if relationships:
+
+        st.header(
+            "🔗 Relationship Explorer"g
+        )
+
+        st.success(
+            f"Detected {len(relationships)} relationship(s)"
+        )
+
+        for rel in relationships:
+
+            left_table = rel[
+                "left_table"
+            ]
+
+            left_column = rel[
+                "left_column"
+            ]
+
+            right_table = rel[
+                "right_table"
+            ]
+
+            right_column = rel[
+                "right_column"
+            ]
+
+            relation_name = rel.get(
+                "relationship",
+                ""
+            )
+
+            st.markdown(
+                f"""
+    **{left_table}.{left_column}**
+    &nbsp;&nbsp;➡️
+    **{right_table}.{right_column}**
+
+    Relationship Type:
+    `{relation_name}`
+    """
+            )
+
+            st.divider()
+
+    # =====================================
+    # Data Model Summary
+    # =====================================
+
+    if tables:
+
+        st.header(
+            "📊 Data Model Summary"
+        )
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+
+            st.metric(
+                "Tables",
+                len(tables)
+            )
+
+        with col2:
+
+            st.metric(
+                "Relationships",
+                len(relationships)
+            )
+
+        with col3:
+
+            total_rows = sum(
+                table["rows"]
+                for table in tables
+            )
+
+            st.metric(
+                "Total Rows",
+                total_rows
+            )
+
+        st.subheader(
+            "Available Tables"
+        )
+
+        for table in tables:
+
+            st.info(
+                f"""
+    {table['table_name']}
+    ({table['rows']} rows,
+    {table['columns']} columns)
+    """
             )
     
     st.header(
@@ -587,6 +728,19 @@ if st.session_state.upload_result:
         st.success(item)
 
     st.divider()
+        # ---------------------------------
+
+    if "suggested_questions" in result:
+
+        st.subheader(
+            "Suggested Questions"
+        )
+
+        for question in result[
+            "suggested_questions"
+        ]:
+
+            st.info(question)
 
     # =====================================
     # Chat Section
@@ -802,6 +956,68 @@ if st.session_state.upload_result:
             try:
 
                 response_data = response.json()
+                # =====================================
+                # Dashboard Response
+                # =====================================
+
+                if response_data.get(
+                    "intent"
+                ) == "dashboard":
+
+                    st.header(
+                        "📊 AI Dashboard"
+                    )
+
+                    for widget in response_data.get(
+                        "widgets",
+                        []
+                    ):
+
+                        st.subheader(
+                            widget.get(
+                                "title",
+                                "Widget"
+                            )
+                        )
+
+                        if widget.get(
+                            "error"
+                        ):
+
+                            st.error(
+                                widget["error"]
+                            )
+
+                            continue
+
+                        result_table = (
+                            widget.get(
+                                "result",
+                                []
+                            )
+                        )
+
+                        chart_info = (
+                            widget.get(
+                                "chart"
+                            )
+                        )
+
+                        if result_table:
+
+                            st.dataframe(
+                                result_table,
+                                use_container_width=True
+                            )
+
+                        if chart_info:
+
+                            render_chart(
+                                chart_info,
+                                result_table
+                            )
+
+                    st.stop()
 
             except Exception:
 

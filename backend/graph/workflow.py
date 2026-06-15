@@ -16,7 +16,8 @@ from graph.nodes import (
     run_insight,
 
     explain,
-    generate_chart
+    generate_chart,
+    generate_dashboard
 )
 
 
@@ -49,6 +50,10 @@ builder.add_node(
     explain
 )
 
+builder.add_node(
+    "dashboard",
+    generate_dashboard
+)
 
 def router(state):
 
@@ -68,16 +73,14 @@ builder.add_conditional_edges(
     router,
 
     {
+    "sql": "sql",
 
-        "sql":
-            "sql",
+    "chart": "sql",
 
-        "chart":
-            "sql",
+    "insight": "insight",
 
-        "insight":
-            "insight"
-    }
+    "dashboard": "dashboard"
+}
 )
 
 builder.add_edge(
@@ -96,6 +99,11 @@ builder.add_edge(
 
 builder.add_edge(
     "explain",
+    END
+)
+
+builder.add_edge(
+    "dashboard",
     END
 )
 
