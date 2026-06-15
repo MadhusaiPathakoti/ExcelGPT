@@ -1,4 +1,5 @@
 # 🚀 ExcelGPT – AI-Powered Business Intelligence Assistant
+🌐 Live Demo: https://excelgpt.streamlit.app/
 
 ExcelGPT transforms Excel files into an intelligent analytics platform. Upload one or more datasets, ask questions in plain English, and receive SQL-powered insights, interactive visualizations, dashboards, and business explanations instantly.
 
