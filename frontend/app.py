@@ -557,7 +557,7 @@ if st.session_state.upload_result:
     if relationships:
 
         st.header(
-            "🔗 Relationship Explorer"g
+            "🔗 Relationship Explorer"
         )
 
         st.success(
