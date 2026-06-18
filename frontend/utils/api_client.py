@@ -45,3 +45,30 @@ def upload_file(uploaded_files):
             "body": response.text
         }
     return response.json()
+
+def voice_to_text(audio_bytes):
+
+    files = {
+
+        "file": (
+
+            "voice.wav",
+
+            io.BytesIO(audio_bytes),
+
+            "audio/wav"
+        )
+    }
+
+    response = requests.post(
+
+        f"{BASE_URL}/voice",
+
+        files=files,
+
+        timeout=120
+    )
+
+    response.raise_for_status()
+
+    return response.json()

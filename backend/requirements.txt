@@ -14,3 +14,5 @@ python-dotenv
 
 langgraph
 langchain-core
+
+faster-whisper

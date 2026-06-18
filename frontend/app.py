@@ -3,8 +3,9 @@ import requests
 import plotly.express as px
 import pandas as pd
 import uuid
+from streamlit_mic_recorder import mic_recorder
 
-from utils.api_client import upload_file
+from utils.api_client import upload_file, voice_to_text
 
 BACKEND_URL = "https://excelgpt-2zrp.onrender.com/api"
 
@@ -348,7 +349,21 @@ if "editing_index" not in st.session_state:
     st.session_state.editing_index = None
 if "session_id" not in st.session_state:
     st.session_state.session_id = None
+    
+if "voice_question" not in st.session_state:
+    st.session_state.voice_question = None
 
+if "processing_question" not in st.session_state:
+    st.session_state.processing_question = None
+if "voice_processed" not in st.session_state:
+    st.session_state.voice_processed = False
+if "last_voice_id" not in st.session_state:
+    st.session_state.last_voice_id = None
+if "last_voice_text" not in st.session_state:
+    st.session_state.last_voice_text = ""
+if "voice_key" not in st.session_state:
+    st.session_state.voice_key = 0
+    
 # =====================================
 # File Upload
 # =====================================
@@ -919,10 +934,74 @@ if st.session_state.upload_result:
                         message["result"]
                     )
     
-    question = st.chat_input(
-        "Ask a question about your data..."
+    # =====================================
+    # Chat Input Area
+    # =====================================
+
+    st.divider()
+
+    st.subheader(
+        "💬 Ask Your Data"
     )
 
+    voice_col, text_col = st.columns(
+        [1, 8]
+    )
+
+    # with voice_col:
+
+    audio = mic_recorder(
+    start_prompt="🎤 Voice",
+    stop_prompt="⏹ Stop",
+    just_once=True,
+    key=f"voice_{st.session_state.voice_key}"
+        )
+
+    if audio:
+
+        try:
+
+            response = voice_to_text(
+                audio["bytes"]
+            )
+
+            recognized_text = (
+                response.get(
+                    "question",
+                    ""
+                ).strip()
+            )
+
+            if (
+                recognized_text
+                and
+                recognized_text
+                != st.session_state.last_voice_text
+            ):
+
+                st.session_state.last_voice_text = (
+                    recognized_text
+                )
+
+                st.session_state.processing_question = (
+                    recognized_text
+                )
+
+        except Exception as e:
+
+            st.error(
+                f"Voice Error: {e}"
+            )
+    # with text_col:
+    typed_question = st.chat_input(
+            "Ask a question about your data..."
+        )
+    if typed_question:
+
+        st.session_state.processing_question = (
+            typed_question
+        )
+    question = st.session_state.processing_question
     if question:
 
         # User message
@@ -1092,3 +1171,12 @@ if st.session_state.upload_result:
                 "chart": chart_info
             }
         )
+
+        # Reset voice state
+
+        st.session_state.processing_question = None
+        st.session_state.last_voice_text = ""
+
+        st.session_state.voice_key += 1
+
+        st.rerun()
