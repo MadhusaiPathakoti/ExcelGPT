@@ -14,5 +14,6 @@ python-dotenv
 
 langgraph
 langchain-core
-
 faster-whisper
+ctranslate2
+av

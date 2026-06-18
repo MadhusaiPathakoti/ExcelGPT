@@ -4,7 +4,12 @@ from faster_whisper import WhisperModel
 class SpeechService:
 
     model = WhisperModel(
-        "base"
+
+        "tiny",
+
+        device="cpu",
+
+        compute_type="int8"
     )
 
     @classmethod
@@ -13,11 +18,21 @@ class SpeechService:
         audio_file
     ):
 
-        segments, _ = (
-            cls.model.transcribe(
-                audio_file
+        try:
+
+            segments, _ = (
+                cls.model.transcribe(
+                    audio_file
+                )
             )
-        )
+
+        except Exception as e:
+
+            import traceback
+
+            traceback.print_exc()
+
+            raise e
 
         text = ""
 
