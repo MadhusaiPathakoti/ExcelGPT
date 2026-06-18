@@ -1,6 +1,7 @@
 import requests
 
 BASE_URL = "https://excelgpt-2zrp.onrender.com/api"
+import io
 
 
 def upload_file(uploaded_files):
