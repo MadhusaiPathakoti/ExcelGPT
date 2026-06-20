@@ -63,6 +63,24 @@ RULES
 
 14. Use aliases for readability.
 
+15. VERY IMPORTANT:
+Whenever filtering TEXT columns, comparisons MUST be case-insensitive.
+
+Examples:
+
+Correct:
+WHERE LOWER("Customer State") = LOWER('telangana')
+
+Correct:
+WHERE LOWER("Product Category") = LOWER('electronics')
+
+Correct:
+WHERE LOWER("Region Name") LIKE LOWER('%south%')
+
+Never do:
+
+WHERE "Customer State"='telangana'
+
 =================================================
 
 EXAMPLES

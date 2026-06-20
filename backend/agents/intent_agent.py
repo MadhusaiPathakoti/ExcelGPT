@@ -37,9 +37,7 @@ class IntentAgent:
             for word in [
                 "insight",
                 "summary",
-                "overview",
-                "top product",
-                "best region"
+                "overview"
             ]
         ):
 
