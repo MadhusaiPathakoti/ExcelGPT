@@ -75,7 +75,7 @@ export function Chat({ sessionId, suggestedQuestions = [] }: ChatProps) {
 
   return (
     <section className="mt-8">
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
+      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
         💬 Chat With Your Data
       </h2>
 
@@ -85,7 +85,7 @@ export function Chat({ sessionId, suggestedQuestions = [] }: ChatProps) {
             <button
               key={index}
               type="button"
-              className="rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-600 hover:border-indigo-300 hover:text-indigo-600"
+              className="rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-600 hover:border-indigo-300 hover:text-indigo-600 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-indigo-500 dark:hover:text-indigo-400"
               onClick={() => askQuestion(question)}
             >
               {question}
@@ -94,9 +94,9 @@ export function Chat({ sessionId, suggestedQuestions = [] }: ChatProps) {
         </div>
       )}
 
-      <div className="space-y-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+      <div className="space-y-4 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
         {messages.length === 0 && (
-          <p className="text-center text-sm text-slate-400">
+          <p className="text-center text-sm text-slate-400 dark:text-slate-500">
             Ask a question to get started.
           </p>
         )}
@@ -116,7 +116,7 @@ export function Chat({ sessionId, suggestedQuestions = [] }: ChatProps) {
 
         {isLoading && (
           <div className="flex justify-start">
-            <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-500">
+            <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
               <span className="h-2 w-2 animate-pulse rounded-full bg-indigo-400" />
               Thinking...
             </div>
@@ -126,7 +126,9 @@ export function Chat({ sessionId, suggestedQuestions = [] }: ChatProps) {
         <div ref={bottomRef} />
       </div>
 
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && (
+        <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>
+      )}
 
       <div className="mt-3 flex items-start gap-2">
         <VoiceRecorder onTranscribed={askQuestion} disabled={isLoading} />

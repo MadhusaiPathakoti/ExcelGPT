@@ -27,7 +27,7 @@ export function ChatMessageView({
           {isEditing ? (
             <div className="space-y-2">
               <textarea
-                className="w-full min-w-[16rem] rounded-md border border-indigo-300 bg-white px-2 py-1.5 text-sm text-slate-900"
+                className="w-full min-w-[16rem] rounded-md border border-indigo-300 bg-white px-2 py-1.5 text-sm text-slate-900 dark:border-indigo-700 dark:bg-slate-900 dark:text-slate-100"
                 value={draft}
                 onChange={(event) => setDraft(event.target.value)}
                 rows={3}
@@ -79,8 +79,8 @@ export function ChatMessageView({
 
   if (message.role === 'dashboard') {
     return (
-      <div className="rounded-lg border border-slate-200 bg-white p-4">
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
+      <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
           📊 AI Dashboard{' '}
           {message.dashboardType ? `— ${message.dashboardType}` : ''}
         </h3>
@@ -88,13 +88,15 @@ export function ChatMessageView({
           {message.widgets.map((widget, index) => (
             <div
               key={index}
-              className="rounded-md border border-slate-200 p-3"
+              className="rounded-md border border-slate-200 p-3 dark:border-slate-700"
             >
-              <p className="mb-2 text-sm font-medium text-slate-800">
+              <p className="mb-2 text-sm font-medium text-slate-800 dark:text-slate-200">
                 {widget.title}
               </p>
               {widget.error ? (
-                <p className="text-sm text-red-600">{widget.error}</p>
+                <p className="text-sm text-red-600 dark:text-red-400">
+                  {widget.error}
+                </p>
               ) : (
                 <div className="space-y-3">
                   {widget.result && widget.result.length > 0 && (
@@ -114,17 +116,17 @@ export function ChatMessageView({
 
   return (
     <div className="flex justify-start">
-      <div className="max-w-3xl space-y-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800">
-        <div className="leading-relaxed [&_a]:text-indigo-600 [&_code]:rounded [&_code]:bg-slate-100 [&_code]:px-1 [&_p]:my-1 [&_ul]:my-1 [&_ul]:list-disc [&_ul]:pl-5">
+      <div className="max-w-3xl space-y-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+        <div className="leading-relaxed [&_a]:text-indigo-600 [&_code]:rounded [&_code]:bg-slate-100 [&_code]:px-1 [&_p]:my-1 [&_ul]:my-1 [&_ul]:list-disc [&_ul]:pl-5 dark:[&_a]:text-indigo-400 dark:[&_code]:bg-slate-700">
           <ReactMarkdown>{message.content}</ReactMarkdown>
         </div>
 
         {message.sql && (
           <div>
-            <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
               Generated SQL
             </p>
-            <pre className="overflow-auto rounded-md bg-slate-900 px-3 py-2 text-xs text-slate-100">
+            <pre className="overflow-auto rounded-md bg-slate-900 px-3 py-2 text-xs text-slate-100 dark:bg-slate-950">
               <code>{message.sql}</code>
             </pre>
           </div>
@@ -132,7 +134,7 @@ export function ChatMessageView({
 
         {message.result && message.result.length > 0 && (
           <div>
-            <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
               Results
             </p>
             <DataTable rows={message.result} />
@@ -141,7 +143,7 @@ export function ChatMessageView({
 
         {message.chart && message.result && (
           <div>
-            <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
               Visualization
             </p>
             <ChartRenderer chart={message.chart} rows={message.result} />

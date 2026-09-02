@@ -4,6 +4,7 @@ import type { UploadResult } from './api/types'
 import { Chat } from './components/Chat'
 import { DatasetOverview } from './components/DatasetOverview'
 import { FileUpload } from './components/FileUpload'
+import { ThemeToggle } from './components/ThemeToggle'
 
 type BackendStatus = 'checking' | 'online' | 'offline'
 
@@ -28,12 +29,14 @@ function App() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+      <header className="border-b border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-6 py-4">
           <div>
-            <h1 className="text-xl font-semibold text-slate-900">ExcelGPT</h1>
-            <p className="text-sm text-slate-500">
+            <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+              ExcelGPT
+            </h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
               AI-powered business intelligence assistant
             </p>
           </div>
@@ -41,7 +44,7 @@ function App() {
             {uploadResult && (
               <button
                 type="button"
-                className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100"
+                className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
                 onClick={() => setUploadResult(null)}
               >
                 Upload different files
@@ -51,10 +54,10 @@ function App() {
               className={
                 'flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ' +
                 (backendStatus === 'online'
-                  ? 'bg-emerald-100 text-emerald-700'
+                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
                   : backendStatus === 'offline'
-                    ? 'bg-red-100 text-red-700'
-                    : 'bg-slate-100 text-slate-500')
+                    ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
+                    : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400')
               }
             >
               <span
@@ -73,6 +76,7 @@ function App() {
                   ? 'Backend unreachable'
                   : 'Checking backend...'}
             </span>
+            <ThemeToggle />
           </div>
         </div>
       </header>

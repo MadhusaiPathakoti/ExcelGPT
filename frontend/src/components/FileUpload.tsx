@@ -56,8 +56,8 @@ export function FileUpload({ onUploaded }: FileUploadProps) {
         className={
           'flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center transition-colors ' +
           (isDragging
-            ? 'border-indigo-400 bg-indigo-50'
-            : 'border-slate-300 bg-white hover:border-slate-400')
+            ? 'border-indigo-400 bg-indigo-50 dark:border-indigo-500 dark:bg-indigo-950/40'
+            : 'border-slate-300 bg-white hover:border-slate-400 dark:border-slate-600 dark:bg-slate-800 dark:hover:border-slate-500')
         }
         onDragOver={(event) => {
           event.preventDefault()
@@ -68,22 +68,22 @@ export function FileUpload({ onUploaded }: FileUploadProps) {
       >
         {isUploading ? (
           <>
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600" />
-            <p className="mt-4 text-sm font-medium text-slate-600">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600 dark:border-indigo-900 dark:border-t-indigo-400" />
+            <p className="mt-4 text-sm font-medium text-slate-600 dark:text-slate-300">
               Analyzing dataset...
             </p>
           </>
         ) : (
           <>
-            <p className="text-sm font-medium text-slate-700">
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
               Drag and drop Excel files here
             </p>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               or click below to browse (.xlsx, .xls, multiple files supported)
             </p>
             <button
               type="button"
-              className="mt-4 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+              className="mt-4 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
               onClick={() => inputRef.current?.click()}
             >
               Upload Excel Files
@@ -99,7 +99,9 @@ export function FileUpload({ onUploaded }: FileUploadProps) {
           onChange={(event) => handleFiles(event.target.files)}
         />
       </div>
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      {error && (
+        <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>
+      )}
     </div>
   )
 }

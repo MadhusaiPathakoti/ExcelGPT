@@ -71,7 +71,7 @@ export function VoiceRecorder({ onTranscribed, disabled }: VoiceRecorderProps) {
           type="button"
           onClick={startRecording}
           disabled={disabled}
-          className="whitespace-nowrap rounded-md border border-slate-300 bg-white px-3 py-2 text-sm hover:bg-slate-50 disabled:opacity-50"
+          className="whitespace-nowrap rounded-md border border-slate-300 bg-white px-3 py-2 text-sm hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700"
         >
           🎤 Voice
         </button>
@@ -81,7 +81,7 @@ export function VoiceRecorder({ onTranscribed, disabled }: VoiceRecorderProps) {
         <button
           type="button"
           onClick={stopRecording}
-          className="flex items-center gap-1.5 whitespace-nowrap rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700"
+          className="flex items-center gap-1.5 whitespace-nowrap rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300"
         >
           <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-red-500" />
           ⏹ Stop
@@ -89,12 +89,14 @@ export function VoiceRecorder({ onTranscribed, disabled }: VoiceRecorderProps) {
       )}
 
       {state === 'processing' && (
-        <span className="whitespace-nowrap rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500">
+        <span className="whitespace-nowrap rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
           Transcribing...
         </span>
       )}
 
-      {error && <span className="text-xs text-red-600">{error}</span>}
+      {error && (
+        <span className="text-xs text-red-600 dark:text-red-400">{error}</span>
+      )}
     </div>
   )
 }

@@ -1,30 +1,33 @@
+import { useIsDarkMode } from '../hooks/useIsDarkMode'
 import type { HeatmapMatrix } from '../lib/chartData'
 
 interface HeatmapGridProps {
   heatmap: HeatmapMatrix
 }
 
-function cellBackground(value: number, maxValue: number): string {
-  if (maxValue <= 0) return 'rgba(99, 102, 241, 0.05)'
-  const intensity = 0.1 + 0.8 * (value / maxValue)
-  return `rgba(99, 102, 241, ${intensity.toFixed(2)})`
+function cellBackground(value: number, maxValue: number, isDark: boolean): string {
+  const base = isDark ? '129, 140, 248' : '99, 102, 241'
+  if (maxValue <= 0) return `rgba(${base}, 0.08)`
+  const intensity = 0.12 + 0.75 * (value / maxValue)
+  return `rgba(${base}, ${intensity.toFixed(2)})`
 }
 
 export function HeatmapGrid({ heatmap }: HeatmapGridProps) {
   const { xValues, colorValues, matrix, maxValue } = heatmap
+  const isDark = useIsDarkMode()
 
   return (
-    <div className="overflow-auto rounded-md border border-slate-200">
+    <div className="overflow-auto rounded-md border border-slate-200 dark:border-slate-700">
       <table className="min-w-full border-collapse text-xs">
         <thead>
           <tr>
-            <th className="sticky left-0 bg-slate-50 px-3 py-2 text-left font-medium text-slate-600">
+            <th className="sticky left-0 bg-slate-50 px-3 py-2 text-left font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
               &nbsp;
             </th>
             {colorValues.map((column) => (
               <th
                 key={column}
-                className="whitespace-nowrap bg-slate-50 px-3 py-2 text-left font-medium text-slate-600"
+                className="whitespace-nowrap bg-slate-50 px-3 py-2 text-left font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300"
               >
                 {column}
               </th>
@@ -34,7 +37,7 @@ export function HeatmapGrid({ heatmap }: HeatmapGridProps) {
         <tbody>
           {xValues.map((row) => (
             <tr key={row}>
-              <td className="sticky left-0 whitespace-nowrap bg-slate-50 px-3 py-2 font-medium text-slate-600">
+              <td className="sticky left-0 whitespace-nowrap bg-slate-50 px-3 py-2 font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                 {row}
               </td>
               {colorValues.map((column) => {
@@ -42,8 +45,8 @@ export function HeatmapGrid({ heatmap }: HeatmapGridProps) {
                 return (
                   <td
                     key={column}
-                    className="whitespace-nowrap px-3 py-2 text-center text-slate-800"
-                    style={{ backgroundColor: cellBackground(value, maxValue) }}
+                    className="whitespace-nowrap px-3 py-2 text-center text-slate-800 dark:text-slate-100"
+                    style={{ backgroundColor: cellBackground(value, maxValue, isDark) }}
                   >
                     {value.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                   </td>

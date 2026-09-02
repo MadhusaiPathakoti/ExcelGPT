@@ -34,12 +34,12 @@ export function DatasetOverview({ result }: DatasetOverviewProps) {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+      <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
         Dataset uploaded successfully
       </div>
 
       <section>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 dark:text-slate-400">
           Dataset Overview
         </h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -52,9 +52,11 @@ export function DatasetOverview({ result }: DatasetOverviewProps) {
       <section className="space-y-3">
         <CollapsibleSection title="Missing Values">
           {Object.keys(missingValues).length === 0 ? (
-            <p className="text-sm text-slate-500">No missing value data.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              No missing value data.
+            </p>
           ) : (
-            <ul className="space-y-1 text-sm text-slate-700">
+            <ul className="space-y-1 text-sm text-slate-700 dark:text-slate-300">
               {Object.entries(missingValues).map(([column, count]) => (
                 <li key={column} className="flex justify-between">
                   <span>{column}</span>
@@ -66,7 +68,9 @@ export function DatasetOverview({ result }: DatasetOverviewProps) {
         </CollapsibleSection>
 
         <CollapsibleSection title="Duplicate Rows">
-          <p className="text-sm text-slate-700">{profile.duplicates ?? 0}</p>
+          <p className="text-sm text-slate-700 dark:text-slate-300">
+            {profile.duplicates ?? 0}
+          </p>
         </CollapsibleSection>
 
         {Object.keys(numericSummary).length > 0 && (
@@ -77,11 +81,11 @@ export function DatasetOverview({ result }: DatasetOverviewProps) {
 
         {Object.keys(categoricalSummary).length > 0 && (
           <CollapsibleSection title="Categorical Summary">
-            <ul className="space-y-2 text-sm text-slate-700">
+            <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
               {Object.entries(categoricalSummary).map(([column, stats]) => (
                 <li key={column} className="flex justify-between">
                   <span>{column}</span>
-                  <span className="text-slate-500">
+                  <span className="text-slate-500 dark:text-slate-400">
                     {stats.unique_values} unique · top: {stats.top_value ?? 'N/A'}
                   </span>
                 </li>
@@ -93,7 +97,7 @@ export function DatasetOverview({ result }: DatasetOverviewProps) {
 
       {Object.keys(previews).length > 0 && (
         <section>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             📂 Uploaded Datasets
           </h2>
           <div className="space-y-3">
@@ -111,27 +115,29 @@ export function DatasetOverview({ result }: DatasetOverviewProps) {
 
       {relationships.length > 0 && (
         <section>
-          <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500">
+          <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             🔗 Relationship Explorer
           </h2>
-          <p className="mb-3 text-sm text-emerald-700">
+          <p className="mb-3 text-sm text-emerald-700 dark:text-emerald-400">
             Detected {relationships.length} relationship(s)
           </p>
           <div className="space-y-2">
             {relationships.map((rel, index) => (
               <div
                 key={index}
-                className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm"
+                className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
               >
-                <span className="font-medium text-slate-800">
+                <span className="font-medium text-slate-800 dark:text-slate-200">
                   {rel.left_table}.{rel.left_column}
                 </span>
-                <span className="mx-2 text-slate-400">➡️</span>
-                <span className="font-medium text-slate-800">
+                <span className="mx-2 text-slate-400 dark:text-slate-500">➡️</span>
+                <span className="font-medium text-slate-800 dark:text-slate-200">
                   {rel.right_table}.{rel.right_column}
                 </span>
                 {rel.relationship && (
-                  <span className="ml-2 text-slate-500">({rel.relationship})</span>
+                  <span className="ml-2 text-slate-500 dark:text-slate-400">
+                    ({rel.relationship})
+                  </span>
                 )}
               </div>
             ))}
@@ -141,7 +147,7 @@ export function DatasetOverview({ result }: DatasetOverviewProps) {
 
       {tables.length > 0 && (
         <section>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             📊 Data Model Summary
           </h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -153,7 +159,7 @@ export function DatasetOverview({ result }: DatasetOverviewProps) {
             {tables.map((table) => (
               <div
                 key={table.table_name}
-                className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700"
+                className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
               >
                 {table.table_name} ({table.rows} rows, {table.columns} columns)
               </div>
@@ -164,7 +170,7 @@ export function DatasetOverview({ result }: DatasetOverviewProps) {
 
       {insightEntries.length > 0 && (
         <section>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             📊 AI Generated Insights
           </h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -180,21 +186,21 @@ export function DatasetOverview({ result }: DatasetOverviewProps) {
       )}
 
       {Boolean(insights.error) && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300">
           {String(insights.error)}
         </div>
       )}
 
       {suggested_questions.length > 0 && (
         <section>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             Suggested Questions
           </h2>
           <div className="space-y-2">
             {suggested_questions.map((question, index) => (
               <div
                 key={index}
-                className="rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-800"
+                className="rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-800 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-300"
               >
                 {question}
               </div>
