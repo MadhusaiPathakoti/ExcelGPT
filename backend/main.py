@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-
+from api.voice_routes import router as voice_router
 from api.upload_routes import router as upload_router
 from api.chat_routes import (
     router as chat_router
@@ -14,6 +14,10 @@ app.include_router(
 )
 app.include_router(
     chat_router,
+    prefix="/api"
+)
+app.include_router(
+    voice_router,
     prefix="/api"
 )
 

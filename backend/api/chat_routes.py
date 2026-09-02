@@ -1,6 +1,16 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
+from agents.dashboard_agent import (
+    DashboardAgent
+)
 
+from agents.sql_agent import (
+    SQLAgent
+)
+
+from agents.chart_agent import (
+    ChartAgent
+)
 from graph.workflow import graph
 
 from services.session_store import (
@@ -26,17 +36,13 @@ def detect_chart(
     result
 ):
 
-    question = (
-        question.lower()
-    )
+    question = question.lower()
 
     if not result:
         return None
 
-    columns = (
-        list(
-            result[0].keys()
-        )
+    columns = list(
+        result[0].keys()
     )
 
     if len(columns) < 2:
@@ -101,10 +107,7 @@ def chat(
     request: ChatRequest
 ):
 
-    if (
-        request.session_id
-        not in SESSIONS
-    ):
+    if request.session_id not in SESSIONS:
 
         return {
 
@@ -118,32 +121,83 @@ def chat(
                 [],
 
             "chart":
-                None
+                None,
+
+            "dashboard":
+                {}
         }
 
-    table_name = (
+    session_data = (
         SESSIONS[
             request.session_id
         ]
     )
 
+    tables = (
+        session_data.get(
+            "tables",
+            []
+        )
+    )
+
+    relationships = (
+        session_data.get(
+            "relationships",
+            []
+        )
+    )
+
+    if not tables:
+
+        return {
+
+            "answer":
+                "No tables found in session.",
+
+            "sql":
+                "",
+
+            "result":
+                [],
+
+            "chart":
+                None
+        }
+
     db = SQLExecutor()
+
+    schema_text = ""
 
     try:
 
-        schema_df = (
-            db.execute(
-                f"""
-                DESCRIBE
-                {table_name}
-                """
-            )
-        )
+        for table in tables:
 
-        schema = (
-            schema_df
-            .to_string()
-        )
+            table_name = (
+                table[
+                    "table_name"
+                ]
+            )
+
+            schema_df = (
+                db.execute(
+                    f"""
+                    DESCRIBE
+                    {table_name}
+                    """
+                )
+            )
+
+            schema_text += f"""
+
+TABLE:
+{table_name}
+
+SCHEMA:
+
+{schema_df.to_string()}
+
+==================================================
+"""
 
     except Exception as e:
 
@@ -170,10 +224,13 @@ def chat(
                 request.question,
 
             "schema":
-                schema,
+                schema_text,
 
-            "table_name":
-                table_name,
+            "tables":
+                tables,
+
+            "relationships":
+                relationships,
 
             "intent":
                 "",
@@ -196,7 +253,119 @@ def chat(
                 state
             )
         )
+        # =====================================
+        # Dashboard Mode
+        # =====================================
 
+        if result.get(
+            "intent"
+        ) == "dashboard":
+
+            dashboard = (
+                result.get(
+                    "dashboard",
+                    {}
+                )
+            )
+
+            widgets = []
+
+            for widget in dashboard.get(
+                "widgets",
+                []
+            ):
+
+                try:
+
+                    sql = SQLAgent.generate_sql(
+
+                        widget[
+                            "question"
+                        ],
+
+                        schema_text,
+
+                        tables,
+
+                        relationships
+                    )
+
+                    df = (
+                        SQLExecutor.execute(
+                            sql
+                        )
+                    )
+
+                    records = (
+                        df.fillna("")
+                        .to_dict(
+                            orient="records"
+                        )
+                    )
+
+                    chart = (
+                        ChartAgent.recommend(
+                            records,
+                            widget[
+                                "question"
+                            ]
+                        )
+                    )
+
+                    widgets.append(
+
+                        {
+
+                            "title":
+                                widget[
+                                    "title"
+                                ],
+
+                            "question":
+                                widget[
+                                    "question"
+                                ],
+
+                            "sql":
+                                sql,
+
+                            "result":
+                                records,
+
+                            "chart":
+                                chart
+                        }
+                    )
+
+                except Exception as e:
+
+                    widgets.append(
+
+                        {
+
+                            "title":
+                                widget[
+                                    "title"
+                                ],
+
+                            "error":
+                                str(e)
+                        }
+                    )
+
+            return {
+
+                "intent":
+                    "dashboard",
+
+                "dashboard_type":
+                    dashboard.get(
+                        "dashboard_type"
+                    ),
+
+                "widgets":
+                    widgets
+            }
     except Exception as e:
 
         return {
@@ -220,46 +389,72 @@ def chat(
         )
     )
 
-    if not chart:
-
-        chart = detect_chart(
-            request.question,
-            result.get(
-                "result",
-                []
-            )
-        )
-
     print(
-        "\n========== LANGGRAPH =========="
+        "\n========== MULTI TABLE QUERY =========="
     )
 
     print(
-        "QUESTION:",
+        "QUESTION:"
+    )
+
+    print(
         request.question
     )
 
     print(
-        "INTENT:",
+        "\nTABLES:"
+    )
+
+    for table in tables:
+
+        print(
+            table[
+                "table_name"
+            ]
+        )
+
+    print(
+        "\nRELATIONSHIPS:"
+    )
+
+    for rel in relationships:
+
+        print(
+            f"{rel['left_table']}.{rel['left_column']} "
+            f"= "
+            f"{rel['right_table']}.{rel['right_column']}"
+        )
+
+    print(
+        "\nINTENT:"
+    )
+
+    print(
         result.get(
             "intent"
         )
     )
 
     print(
-        "SQL:",
+        "\nSQL:"
+    )
+
+    print(
         result.get(
             "sql"
         )
     )
 
     print(
-        "CHART:",
+        "\nCHART:"
+    )
+
+    print(
         chart
     )
 
     print(
-        "===============================\n"
+        "\n=======================================\n"
     )
 
     return {
@@ -289,5 +484,11 @@ def chat(
             result.get(
                 "intent",
                 ""
-            )
+            ),
+
+        "tables":
+            tables,
+
+        "relationships":
+            relationships
     }
