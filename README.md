@@ -1,5 +1,4 @@
 # 🚀 ExcelGPT – AI-Powered Business Intelligence Assistant
-🌐 Live Demo: https://excelgpt.streamlit.app/
 📖 Test Document:- https://acesse.one/x39smsp
 
 ExcelGPT transforms Excel files into an intelligent analytics platform. Upload one or more datasets, ask questions in plain English, and receive SQL-powered insights, interactive visualizations, dashboards, and business explanations instantly.
@@ -162,8 +161,10 @@ Automatically identifies:
 
 ### Frontend
 
-* Streamlit
-* Plotly
+* React 19 + TypeScript
+* Vite
+* Tailwind CSS
+* Recharts
 
 ### Backend
 
@@ -183,10 +184,6 @@ Automatically identifies:
 * OpenRouter
 * DeepSeek
 
-### Visualization
-
-* Plotly Express
-
 ---
 
 ## 📁 Project Structure
@@ -195,9 +192,17 @@ excelgpt/
 
 ├── frontend/
 
-│ ├── app.py
+│ ├── src/
 
-│ └── utils/
+│ │ ├── api/
+
+│ │ ├── components/
+
+│ │ ├── lib/
+
+│ │ └── types/
+
+│ └── package.json
 
 ├── backend/
 
@@ -231,13 +236,19 @@ cd backend
 uvicorn main:app --reload
 ```
 
+Requires an `OPENROUTER_API_KEY` environment variable (or a `backend/.env` file) for SQL generation, chart recommendation, and explanations to work — without it, chat requests return a `Workflow Error`.
+
 ### Frontend
 
 ```bash
 cd frontend
 
-streamlit run app.py
+npm install
+
+npm run dev
 ```
+
+Copy `frontend/.env.example` to `frontend/.env` and set `VITE_API_BASE_URL` if the backend isn't running at `http://localhost:8000/api`.
 
 ---
 
