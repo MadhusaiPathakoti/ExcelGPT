@@ -5,10 +5,7 @@ python-multipart
 pandas
 openpyxl
 
-streamlit
-plotly
-requests
-dotenv 
+dotenv
 duckdb
 python-dotenv
 
